@@ -1,0 +1,37 @@
+#include <stdio.h>
+#include <pthread.h>
+
+int counter = 0;
+pthread_mutex_t mutex;
+
+void *fthread1(void *arg) {
+    pthread_mutex_lock(&mutex);
+    for(int i = 0; i < 5000; i++) {
+        counter++;
+    }
+    pthread_mutex_unlock(&mutex);
+}
+
+void *fthread2(void *arg) {
+    pthread_mutex_lock(&mutex);
+    for(int i = 0; i < 5000; i++) {
+        counter++;
+    }
+    pthread_mutex_unlock(&mutex);
+}
+
+int main() {
+    pthread_t thread1, thread2;
+
+    printf("Initial value of counter: %d\n", counter);
+
+    pthread_create(&thread1, NULL, fthread1, NULL);
+    pthread_create(&thread2, NULL, fthread2, NULL);
+
+    pthread_join(thread1, NULL);
+    pthread_join(thread2, NULL);
+
+    printf("Final value of counter: %d\n", counter);
+
+    return 0;
+}
