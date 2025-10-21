@@ -1,0 +1,42 @@
+#include <stdio.h>
+#include <pthread.h>
+#include <unistd.h>
+#include <semaphore.h>
+#include <stdlib.h>
+
+sem_t resource_sem;
+
+void *worker_thread(void *arg) {
+    int thread_id = *(int *)arg;
+    printf("Thread %d: Trying to gain access.\n", thread_id);
+
+    sem_wait(&resource_sem); //ждем доступ к ресурсу
+    printf("Thread %d: Got access to resource. Working...\n", thread_id);
+    sleep(1);
+
+    printf("Thread %d: End work. Free resource...\n", thread_id);
+    sem_post(&resource_sem);
+    return NULL;
+}
+
+int main() {
+    pthread_t threads[4]; //создадим 4 потока
+    int thread_ids[4];
+
+    //инициализируем семафор с нач значением 2
+    sem_init(&resource_sem, 0, 2);
+
+    printf("Main thread: creating 4 threads\n");
+
+    for (int i = 0; i < 4; i++) {
+        thread_ids[i] = i + 1;
+        pthread_create(&threads[i], NULL, worker_thread, &thread_ids[i]);
+    }
+
+    for(int i = 0; i < 4; i++) {
+        pthread_join(threads[i], NULL);
+    }
+
+    printf("Main thread: all threads ended work\n");
+    return 0;
+}
